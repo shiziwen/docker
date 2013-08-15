@@ -352,7 +352,8 @@ Start a container
            Content-Type: application/json
 
            {
-                "Binds":["/tmp:/tmp"]
+                "Binds":["/tmp:/tmp"],
+                "LxcConf":{"lxc.utsname":"docker"}
            }
 
         **Example response**:

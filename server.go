@@ -663,16 +663,16 @@ func (srv *Server) pushRepository(r *registry.Registry, out io.Writer, localName
 
 		// For each image within the repo, push them
 		for _, elem := range imgList {
+			if _, exists := repoData.ImgList[elem.ID]; exists {
+				out.Write(sf.FormatProgress(utils.TruncateID(elem.ID), "Pushing", "image already pushed, skipping"))
+				errors <- nil
+				continue
+			} else if r.LookupRemoteImage(elem.ID, ep, repoData.Tokens) {
+				out.Write(sf.FormatProgress(utils.TruncateID(elem.ID), "Pushing", "image already pushed, skipping"))
+				errors <- nil
+				continue
+			}
 			uploadImage := func(img *registry.ImgData) {
-				if _, exists := repoData.ImgList[img.ID]; exists {
-					out.Write(sf.FormatProgress(utils.TruncateID(img.ID), "Pushing", "image already pushed, skipping"))
-					errors <- nil
-					return
-				} else if r.LookupRemoteImage(img.ID, ep, repoData.Tokens) {
-					out.Write(sf.FormatProgress(utils.TruncateID(img.ID), "Pushing", "image already pushed, skipping"))
-					errors <- nil
-					return
-				}
 				if checksum, err := srv.pushImage(r, out, remoteName, img.ID, ep, repoData.Tokens, sf); err != nil {
 					// FIXME: Continue on error?
 					errors <- err
